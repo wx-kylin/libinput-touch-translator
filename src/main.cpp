@@ -20,7 +20,7 @@
  *
  */
 
-#include <QCoreApplication>
+#include <QGuiApplication>
 
 #include "event-monitor.h"
 
@@ -47,7 +47,7 @@
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
+    QGuiApplication a(argc, argv);
 
     QThread t1;
 

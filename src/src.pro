@@ -1,4 +1,4 @@
-QT += gui
+QT += gui KWindowSystem
 
 TARGET = libinput-touch-translator
 

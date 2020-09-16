@@ -29,6 +29,8 @@
 
 #include "touch-screen-two-finger-swipe-gesture.h"
 
+#include <KWindowSystem>
+
 #include <QDebug>
 
 static TouchScreenGestureManager *instance = nullptr;
@@ -137,10 +139,34 @@ void TouchScreenGestureManager::onGestureFinished(int index)
         auto settingsManager = SettingsManager::getManager();
         auto shortCut = settingsManager->getShortCut(gesture, TouchScreenGestureInterface::Finished, gesture->totalDirection());
         qDebug()<<shortCut;
+        if (gesture->type() == TouchScreenGestureInterface::Zoom) {
+            if (gesture->totalDirection() == TouchScreenGestureInterface::ZoomIn) {
+                if (shortCut.toString() == "Meta+PgUp") {
+                    // check if maximized
+                    auto activeWid = KWindowSystem::activeWindow();
+                    auto windowInfo = KWindowInfo(activeWid, NET::Property::WMAllProperties, NET::Property2::WM2AllProperties);
+                    if (windowInfo.hasState(NET::State::Max)) {
+                        goto end;
+                    }
+                }
+            }
+
+            if (gesture->totalDirection() == TouchScreenGestureInterface::ZoomOut) {
+                if (shortCut.toString() == "Meta+PgUp") {
+                    // check if maximized
+                    auto activeWid = KWindowSystem::activeWindow();
+                    auto windowInfo = KWindowInfo(activeWid, NET::Property::WMAllProperties, NET::Property2::WM2AllProperties);
+                    if (!windowInfo.hasState(NET::State::Max)) {
+                        goto end;
+                    }
+                }
+            }
+        }
 
         UInputHelper::getInstance()->executeShortCut(shortCut);
     }
 
+end:
     // reset all gesture
     for (auto gesture : m_gestures) {
         gesture->reset();

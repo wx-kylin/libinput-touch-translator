@@ -25,6 +25,8 @@
 #include "settings-manager.h"
 #include "uinput-helper.h"
 
+#include <KWindowSystem>
+
 #include <QDebug>
 
 static TouchpadGestureManager *instance = nullptr;
@@ -196,6 +198,29 @@ void TouchpadGestureManager::onEventTriggerd(TouchpadGestureManager::GestureType
     qDebug()<<m_totalDxmm<<m_totalDymm<<m_totalAngle<<m_totalScale;
 
     auto shortcut = SettingsManager::getManager()->gesShortCut(fingerCount, type, state, direction);
+    if (type == Pinch && state == Finished) {
+        if (direction == ZoomIn) {
+            if (shortcut.toString() == "Meta+PgUp") {
+                // check if maximized
+                auto activeWid = KWindowSystem::activeWindow();
+                auto windowInfo = KWindowInfo(activeWid, NET::Property::WMAllProperties, NET::Property2::WM2AllProperties);
+                if (windowInfo.hasState(NET::State::Max)) {
+                    return;
+                }
+            }
+        }
+
+        if (direction == ZoomOut) {
+            if (shortcut.toString() == "Meta+PgUp") {
+                // check if maximized
+                auto activeWid = KWindowSystem::activeWindow();
+                auto windowInfo = KWindowInfo(activeWid, NET::Property::WMAllProperties, NET::Property2::WM2AllProperties);
+                if (!windowInfo.hasState(NET::State::Max)) {
+                    return;
+                }
+            }
+        }
+    }
     UInputHelper::getInstance()->executeShortCut(shortcut);
 }
 
